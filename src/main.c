@@ -1,16 +1,23 @@
-/**
- * Hello World Example
- * Created With Genesis-Code extension for Visual Studio Code
- * Use "Genesis Code: Compile" command to compile this program.
- **/
 #include <genesis.h>
 #include <resources.h>
+#include <string.h>
+
+int sign(int x)
+{
+    return (x > 0) - (x < 0);
+}
 
 // границы экрана
 const int LEFT_EDGE = 0;
 const int RIGHT_EDGE = 320;
 const int TOP_EDGE = 0;
 const int BOTTOM_EDGE = 224;
+
+// счет
+int score = 0;
+char label_score[6] = "SCORE\0";
+char str_score[4] = "0";
+int lvlEveryCount = 10;
 
 Sprite *ball;
 
@@ -62,6 +69,16 @@ void moveBall()
     {
         if (ball_pos_y < player_pos_y + player_height && ball_pos_y + ball_height >= player_pos_y)
         {
+            // при столкновении добавляем счет и обновляем счетчик
+            score++;
+            udpateScoreDisplay();
+
+            if (score % lvlEveryCount == 0)
+            {
+                ball_vel_x += sign(ball_vel_x);
+                ball_vel_y += sign(ball_vel_y);
+            }
+
             ball_pos_y = player_pos_y - ball_height - 1;
             ball_vel_y = -ball_vel_y;
         }
@@ -116,6 +133,13 @@ void positionPlayer()
     SPR_setPosition(player, player_pos_x, player_pos_y);
 }
 
+void udpateScoreDisplay()
+{
+    sprintf(str_score, "%d", score);
+    VDP_clearText(1, 2, 3);
+    VDP_drawText(str_score, 1, 2);
+}
+
 int main()
 {
     JOY_init();                                      // инициализируем джостик
@@ -130,6 +154,9 @@ int main()
     ball = SPR_addSprite(&imgball, ball_pos_x, ball_pos_y, TILE_ATTR(PAL1, 0, FALSE, FALSE));      // добавляем стпрайт шарика
     player = SPR_addSprite(&paddle, player_pos_x, player_pos_y, TILE_ATTR(PAL1, 0, FALSE, FALSE)); // добавляем игрока
 
+    VDP_setTextPlane(BG_A);
+    VDP_drawText(label_score, 1, 1);
+    udpateScoreDisplay();
     while (1)
     {
         moveBall();
