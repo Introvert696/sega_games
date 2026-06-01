@@ -22,6 +22,15 @@ int ball_vel_y = 1;
 int ball_width = 8;
 int ball_height = 8;
 
+Sprite *player;
+
+int player_pos_x = 144;
+const int player_pos_y = 200;
+int player_vel_x = 0;
+const int player_width = 32;
+const int player_height = 8;
+const int player_speed = 3;
+
 // отскоки или движение шарика
 void moveBall()
 {
@@ -48,21 +57,22 @@ void moveBall()
         ball_vel_y = -ball_vel_y;
     }
 
+    // проверка столкновение
+    if (ball_pos_x < player_pos_x + player_width && ball_pos_x + ball_width > player_pos_x)
+    {
+        if (ball_pos_y < player_pos_y + player_height && ball_pos_y + ball_height >= player_pos_y)
+        {
+            ball_pos_y = player_pos_y - ball_height - 1;
+            ball_vel_y = -ball_vel_y;
+        }
+    }
+
     // движение шарика
     ball_pos_x += ball_vel_x;
     ball_pos_y += ball_vel_y;
 
     SPR_setPosition(ball, ball_pos_x, ball_pos_y); // устанавливаем позицию
 }
-
-Sprite *player;
-
-int player_pos_x = 144;
-const int player_pos_y = 200;
-int player_vel_x = 0;
-const int player_width = 32;
-const int player_height = 8;
-const int player_speed = 3;
 
 // слушатель для контроллера
 
