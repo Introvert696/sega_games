@@ -2,10 +2,9 @@
 #include <resources.h>
 #include <string.h>
 
-int sign(int x)
-{
-    return (x > 0) - (x < 0);
-}
+bool game_on = FALSE;
+char msg_start[22] = "PRESS START TO BEGIN!\0";
+char msg_reset[37] = "GAME OVER! PRESS START TO PLAY AGAIN.";
 
 // границы экрана
 const int LEFT_EDGE = 0;
@@ -13,11 +12,35 @@ const int RIGHT_EDGE = 320;
 const int TOP_EDGE = 0;
 const int BOTTOM_EDGE = 224;
 
+int sign(int x)
+{
+    return (x > 0) - (x < 0);
+}
+
+void showText(char s[])
+{
+    VDP_drawText(s, 20 - strlen(s) / 2, 15);
+}
+
+void endGame()
+{
+    showText(msg_reset);
+    game_on = FALSE;
+}
+
 // счет
 int score = 0;
 char label_score[6] = "SCORE\0";
 char str_score[4] = "0";
+// каждая 10 счет увеличивается скорость мяча
 int lvlEveryCount = 10;
+
+void udpateScoreDisplay()
+{
+    sprintf(str_score, "%d", score);
+    VDP_clearText(1, 2, 3);
+    VDP_drawText(str_score, 1, 2);
+}
 
 Sprite *ball;
 
@@ -60,8 +83,7 @@ void moveBall()
     }
     else if (ball_pos_y + ball_height > BOTTOM_EDGE)
     {
-        ball_pos_y = BOTTOM_EDGE - ball_height;
-        ball_vel_y = -ball_vel_y;
+        endGame();
     }
 
     // проверка столкновение
@@ -91,6 +113,22 @@ void moveBall()
     SPR_setPosition(ball, ball_pos_x, ball_pos_y); // устанавливаем позицию
 }
 
+void startGame()
+{
+    score = 0;
+    udpateScoreDisplay();
+
+    ball_pos_x = 0;
+    ball_pos_y = 0;
+
+    ball_vel_x = 1;
+    ball_vel_y = 1;
+
+    VDP_clearTextArea(0, 10, 40, 10);
+
+    game_on = TRUE;
+}
+
 // слушатель для контроллера
 
 // joy - контроллер JOY_1 - 8  это джостик
@@ -99,6 +137,14 @@ void moveBall()
 
 void myJoyHandler(u16 joy, u16 changed, u16 state)
 {
+    if (state & BUTTON_START)
+    {
+        if (!game_on)
+        {
+            startGame();
+        }
+    }
+
     if (joy == JOY_1)
     {
         if (state & BUTTON_RIGHT)
@@ -133,13 +179,6 @@ void positionPlayer()
     SPR_setPosition(player, player_pos_x, player_pos_y);
 }
 
-void udpateScoreDisplay()
-{
-    sprintf(str_score, "%d", score);
-    VDP_clearText(1, 2, 3);
-    VDP_drawText(str_score, 1, 2);
-}
-
 int main()
 {
     JOY_init();                                      // инициализируем джостик
@@ -157,11 +196,17 @@ int main()
     VDP_setTextPlane(BG_A);
     VDP_drawText(label_score, 1, 1);
     udpateScoreDisplay();
+    showText(msg_start);
+
     while (1)
     {
-        moveBall();
-        positionPlayer(); // обновляем позицию игрока
-        SPR_update();     // обновляем спрайты
+        if (game_on == TRUE)
+        {
+            moveBall();
+            positionPlayer(); // обновляем позицию игрока
+        }
+
+        SPR_update(); // обновляем спрайты
         SYS_doVBlankProcess();
     }
     return (0);
