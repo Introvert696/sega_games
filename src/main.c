@@ -22,6 +22,7 @@ int ball_vel_y = 1;
 int ball_width = 8;
 int ball_height = 8;
 
+// отскоки или движение шарика
 void moveBall()
 {
     // отскоки по оси Х
@@ -54,21 +55,76 @@ void moveBall()
     SPR_setPosition(ball, ball_pos_x, ball_pos_y); // устанавливаем позицию
 }
 
+Sprite *player;
+
+int player_pos_x = 144;
+const int player_pos_y = 200;
+int player_vel_x = 0;
+const int player_width = 32;
+const int player_height = 8;
+const int player_speed = 3;
+
+// слушатель для контроллера
+
+// joy - контроллер JOY_1 - 8  это джостик
+// changed - было ли изменено состаяние за последний кадр
+//  state - состояние 1 если нажата,  0 если отпущена
+
+void myJoyHandler(u16 joy, u16 changed, u16 state)
+{
+    if (joy == JOY_1)
+    {
+        if (state & BUTTON_RIGHT)
+        {
+            player_vel_x = player_speed;
+        }
+        else if (state & BUTTON_LEFT)
+        {
+            player_vel_x = -player_speed;
+        }
+        else
+        {
+            if ((changed & BUTTON_RIGHT) | (changed & BUTTON_LEFT))
+            {
+                player_vel_x = 0;
+            }
+        }
+    }
+}
+
+void positionPlayer()
+{
+    player_pos_x += player_vel_x;
+
+    // ограничение что бы мы не вышли за рамки экрана
+    if (player_pos_x < LEFT_EDGE)
+        player_pos_x = LEFT_EDGE;
+    if (player_pos_x + player_width > RIGHT_EDGE)
+        player_pos_x = RIGHT_EDGE - player_width;
+
+    // устанавливаем позицию игрока
+    SPR_setPosition(player, player_pos_x, player_pos_y);
+}
+
 int main()
 {
+    JOY_init();                                      // инициализируем джостик
+    JOY_setEventHandler(&myJoyHandler);              // передаем функцию которая будет слушать нажатия джостика
     VDP_loadTileSet(bgtile.tileset, 1, DMA);         // загрузили тайлы в 1 индекс
     PAL_setPalette(PAL1, bgtile.palette->data, DMA); // установили цвет
 
     // VDP_setTileMapXY(BG_B, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, 1), 2, 2); // поместили тайл на экран
     VDP_fillTileMapRect(BG_B, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, 1), 0, 0, 40, 30);
 
-    SPR_init();                                                                 // инициализируем движок спрайтов
-    ball = SPR_addSprite(&imgball, 100, 100, TILE_ATTR(PAL1, 0, FALSE, FALSE)); // добавляем стпрайты
+    SPR_init();                                                                                    // инициализируем движок спрайтов
+    ball = SPR_addSprite(&imgball, ball_pos_x, ball_pos_y, TILE_ATTR(PAL1, 0, FALSE, FALSE));      // добавляем стпрайт шарика
+    player = SPR_addSprite(&paddle, player_pos_x, player_pos_y, TILE_ATTR(PAL1, 0, FALSE, FALSE)); // добавляем игрока
 
     while (1)
     {
         moveBall();
-        SPR_update(); // обновляем спрайты
+        positionPlayer(); // обновляем позицию игрока
+        SPR_update();     // обновляем спрайты
         SYS_doVBlankProcess();
     }
     return (0);
