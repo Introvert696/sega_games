@@ -1,0 +1,47 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug with gdb remote",
+      "request": "launch",
+      "type": "cppdbg",
+      "program": "${workspaceRoot}\\out\\rom.out",
+      "miDebuggerServerAddress": "localhost:6868",
+      "sourceFileMap": {
+        "d:\\apps\\sgdk\\src\\": "${env:GDK}\\src\\"
+      },
+      "args": [],
+      "stopAtEntry": true,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "launchCompleteCommand": "exec-continue",
+      "miDebuggerPath": "${env:GDK}\\bin\\gdb.exe",
+      "setupCommands": [
+        {
+          "text": "set directories '${workspaceFolder};$cwd;$cdir'"
+        }
+      ]
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/Introvert696/Documents/project/c/genesis/src",
+      "program": "c:/Users/Introvert696/Documents/project/c/genesis/src/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
