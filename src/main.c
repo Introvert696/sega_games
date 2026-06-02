@@ -181,6 +181,8 @@ void positionPlayer()
 
 int main()
 {
+    // 2. Инициализируем сам XGM-драйвер
+
     JOY_init();                                      // инициализируем джостик
     JOY_setEventHandler(&myJoyHandler);              // передаем функцию которая будет слушать нажатия джостика
     VDP_loadTileSet(bgtile.tileset, 1, DMA);         // загрузили тайлы в 1 индекс
@@ -197,9 +199,12 @@ int main()
     VDP_drawText(label_score, 1, 1);
     udpateScoreDisplay();
     showText(msg_start);
+    XGM_setLoopNumber(-1); // зацикливаем музыку
+    XGM_startPlay(track1);
 
     while (1)
     {
+
         if (game_on == TRUE)
         {
             moveBall();
